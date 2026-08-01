@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>The AI Blueprint</title>
+<style>
+  /* ─── TOKENS ─────────────────────────────────── */
+  :root {
+    --base:    #0d0f12;
+    --surf:    #13171d;
+    --panel:   #191e26;
+    --border:  #222831;
+    --text:    #e4e8ee;
+    --muted:   #7a8494;
+    --blue:    #0a6cff;
+    --blue-h:  #3d8fff;
+    --yellow:  #FFC700;
+    --yellow-d:#c9a000;
+    --teal:    #21B6D7;
+    --teal-lt: #90DAEB;
+    --red-yt:  #e53935;
+    --font:    Arial, Helvetica, sans-serif;
+    --mono:    'Courier New', Courier, monospace;
+    --r:       10px;
+    --sh:      0 4px 28px rgba(0,0,0,.5);
+    --t:       .18s cubic-bezier(.4,0,.2,1);
+  }
+  [data-theme="light"] {
+    --base:  #eef0f4;
+    --surf:  #ffffff;
+    --panel: #f5f6f9;
+    --border:#d8dce6;
+    --text:  #10141a;
+    --muted: #5a6474;
+    --sh:    0 4px 28px rgba(0,0,0,.08);
+  }
+
+  /* ─── RESET ──────────────────────────────────── */
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--font);background:var(--base);color:var(--text);font-size:15px;line-height:1.6;min-height:100vh;transition:background var(--t),color var(--t)}
+  a{color:inherit;text-decoration:none}
+
+  /* ─── TICKER ─────────────────────────────────── */
+  .ticker-wrap{background:var(--yellow);color:#111;overflow:hidden;white-space:nowrap;position:sticky;top:0;z-index:200;padding:7px 0;border-bottom:2px solid var(--yellow-d)}
+  .ticker-track{display:inline-block;animation:tick 70s linear infinite;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.03em}
+  @keyframes tick{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
+
+  /* ─── HEADER ─────────────────────────────────── */
+  header{background:var(--surf);border-bottom:1px solid var(--border);padding:0 36px;height:66px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:35px;z-index:190;transition:background var(--t)}
+  .logo{display:flex;align-items:center;gap:11px}
+  .logo svg{width:36px;height:36px;flex-shrink:0}
+  .logo-text .eyebrow{font-size:9.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);display:none}
+  .logo-text .wordmark{font-size:19px;font-weight:700;color:var(--text);line-height:1.1}
+  .logo-text .wordmark em{color:var(--blue);font-style:normal}
+
+  /* theme btn */
+  .theme-btn{display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;color:var(--muted);font-family:var(--mono);background:none;border:1px solid var(--border);border-radius:20px;padding:5px 12px;transition:all var(--t);user-select:none}
+  .theme-btn:hover{border-color:var(--blue);color:var(--blue)}
+  .ttrack{width:26px;height:14px;background:var(--border);border-radius:10px;position:relative;transition:background var(--t)}
+  .tthumb{position:absolute;top:2px;left:2px;width:10px;height:10px;background:var(--muted);border-radius:50%;transition:transform var(--t),background var(--t)}
+  [data-theme="light"] .tthumb{transform:translateX(12px);background:var(--blue)}
+  [data-theme="light"] .ttrack{background:#cce0ff}
+
+  /* ─── GAMMA BANNER ───────────────────────────── */
+  .gamma-wrap{max-width:1100px;margin:28px auto 0;padding:0 28px}
+  .gamma-card{background:linear-gradient(135deg,#130C0E 0%,#1b1215 55%,#0c1820 100%);border:1px solid var(--yellow);border-radius:14px;padding:24px 28px;position:relative;overflow:hidden}
+  [data-theme="light"] .gamma-card{background:linear-gradient(135deg,#f5f6f9 0%,#eef0f4 55%,#ffffff 100%);border:1px solid #c9a000}
+  [data-theme="light"] .gamma-card .gamma-title{color:var(--text)}
+  [data-theme="light"] .gamma-card .gamma-desc{color:var(--muted)}
+  [data-theme="light"] .gamma-card .gamma-box{background:rgba(0,0,0,.04);border:1px solid rgba(0,0,0,.1);color:var(--text)}
+  [data-theme="light"] .gamma-card .gamma-box mark{background:rgba(255,199,0,.2);color:#7a6000}
+  [data-theme="light"] .gamma-card .gamma-note{color:var(--muted)}
+  .gamma-card::after{content:'';position:absolute;top:0;right:0;width:260px;height:100%;background:radial-gradient(ellipse at top right,rgba(33,182,215,.13) 0%,transparent 68%);pointer-events:none}
+  .gamma-head{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+  .gamma-pill{background:var(--yellow);color:#130C0E;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 10px;border-radius:20px}
+  .gamma-sub{font-size:11px;color:var(--teal-lt);font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+  .gamma-title{font-size:16px;font-weight:700;color:#fff;margin-bottom:5px}
+  .gamma-desc{font-size:13px;color:#98a4b2;margin-bottom:16px;line-height:1.5}
+  .gamma-box{background:rgba(0,0,0,.32);border:1px solid rgba(255,199,0,.22);border-radius:9px;padding:13px 15px;font-family:var(--mono);font-size:12px;line-height:1.7;color:#cfd8e3;white-space:pre-wrap;word-break:break-word;margin-bottom:13px}
+  .gamma-box mark{background:rgba(255,199,0,.17);color:var(--yellow);border-radius:3px;padding:0 2px}
+  .gamma-actions{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .btn-g-open{display:inline-flex;align-items:center;gap:5px;background:var(--yellow);color:#130C0E;font-size:12px;font-weight:700;padding:7px 15px;border-radius:7px;border:none;cursor:pointer;font-family:var(--font);transition:background var(--t)}
+  .btn-g-open:hover{background:#ffe066}
+  .btn-g-copy{display:inline-flex;align-items:center;gap:5px;background:transparent;border:1px solid rgba(255,199,0,.32);color:var(--yellow);font-size:12px;font-weight:700;padding:7px 15px;border-radius:7px;cursor:pointer;font-family:var(--font);transition:all var(--t)}
+  .btn-g-copy:hover{border-color:var(--yellow);background:rgba(255,199,0,.07)}
+  .btn-g-copy.copied{border-color:#2ecc71;color:#2ecc71}
+  .gamma-note{font-size:11px;color:#454e5c;margin-top:9px;font-style:italic}
+
+  /* ─── TOGGLE BAR ─────────────────────────────── */
+  .toggle-bar-wrap{max-width:1100px;margin:32px auto 0;padding:0 28px}
+  .toggle-bar{display:flex;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:5px;gap:4px;width:fit-content}
+  .tab-btn{display:flex;align-items:center;gap:8px;padding:9px 22px;border-radius:9px;border:none;background:transparent;color:var(--muted);font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;transition:all var(--t);white-space:nowrap}
+  .tab-btn .tab-icon{font-size:16px}
+  .tab-btn .tab-count{font-family:var(--mono);font-size:11px;background:var(--border);padding:1px 7px;border-radius:20px;transition:all var(--t)}
+  .tab-btn.active{background:var(--surf);color:var(--text);box-shadow:0 1px 8px rgba(0,0,0,.2)}
+  .tab-btn.active .tab-count{background:var(--blue);color:#fff}
+  .tab-btn:not(.active):hover{color:var(--text)}
+
+  /* ─── SEARCH ─────────────────────────────────── */
+  .search-wrap-outer{max-width:1100px;margin:18px auto 0;padding:0 28px}
+  .search-inner{position:relative}
+  .s-icon{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+  #search{width:100%;padding:13px 18px 13px 44px;background:var(--surf);border:1.5px solid var(--border);border-radius:var(--r);font-family:var(--font);font-size:15px;color:var(--text);outline:none;transition:border-color var(--t),box-shadow var(--t)}
+  #search::placeholder{color:var(--muted)}
+  #search:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(10,108,255,.13)}
+  .chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
+  .chip{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid var(--border);cursor:pointer;color:var(--muted);transition:all var(--t);background:none;font-family:var(--font)}
+  .chip:hover{border-color:var(--blue);color:var(--blue)}
+  .chip.active-chip{border-color:var(--blue);color:var(--blue);background:rgba(10,108,255,.08)}
+
+  /* ─── MAIN CONTENT ───────────────────────────── */
+  .content-area{max-width:1100px;margin:24px auto 60px;padding:0 28px}
+
+  /* ─── AGENTS GRID ────────────────────────────── */
+  #view-agents{display:block}
+  #view-prompts{display:none}
+  .agents-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px}
+  .agent-card{background:var(--surf);border:1px solid var(--border);border-radius:var(--r);padding:18px;display:flex;gap:13px;align-items:flex-start;transition:border-color var(--t),box-shadow var(--t);animation:up .28s ease both}
+  .agent-card:hover{border-color:var(--blue);box-shadow:var(--sh)}
+  .agent-card.hidden{display:none}
+  .a-emoji{font-size:22px;flex-shrink:0;width:44px;height:44px;background:var(--panel);border-radius:9px;display:flex;align-items:center;justify-content:center}
+  .a-info{flex:1;min-width:0}
+  .a-name{font-weight:700;font-size:14px;margin-bottom:2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .a-desc{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:11px}
+  .a-btns{display:flex;gap:7px;flex-wrap:wrap}
+
+  /* ─── TAGS ───────────────────────────────────── */
+  .tag{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:20px;background:rgba(10,108,255,.1);color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+  .tag.y{background:rgba(255,199,0,.1);color:#c9a000}[data-theme="light"] .tag.y{color:#7a6000}
+  .tag.g{background:rgba(46,204,113,.1);color:#27ae60}
+  .tag.p{background:rgba(155,89,182,.1);color:#8e44ad}
+  .tag.r{background:rgba(231,76,60,.1);color:#c0392b}
+  .tag.t{background:rgba(33,182,215,.1);color:#16a0bc}
+
+  /* ─── BUTTONS ────────────────────────────────── */
+  .btn-open{display:inline-flex;align-items:center;gap:4px;background:var(--blue);color:#fff;font-size:12px;font-weight:700;padding:6px 13px;border-radius:6px;border:none;cursor:pointer;transition:background var(--t);font-family:var(--font)}
+  .btn-open:hover{background:var(--blue-h)}
+  .btn-yt{display:inline-flex;align-items:center;gap:4px;background:transparent;border:1px solid var(--red-yt);color:var(--red-yt);font-size:12px;font-weight:700;padding:6px 13px;border-radius:6px;cursor:pointer;transition:all var(--t);font-family:var(--font)}
+  .btn-yt:hover{background:var(--red-yt);color:#fff}
+
+  /* ─── PROMPTS LAYOUT ─────────────────────────── */
+  .prompts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px}
+  .flash-card{background:var(--surf);border:1px solid var(--border);border-left:3px solid var(--yellow);border-radius:var(--r);padding:17px;transition:box-shadow var(--t);animation:up .28s ease both}
+  .flash-card:hover{box-shadow:var(--sh)}
+  .flash-card.hidden{display:none}
+  .flash-card.extra{display:none}
+  .flash-card.extra.revealed,.flash-card.extra.sv{display:block}
+  .f-meta{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px}
+  .f-title{font-weight:700;font-size:14px;margin-bottom:4px}
+  .f-desc{font-size:13px;color:var(--muted);margin-bottom:11px;line-height:1.5}
+  .prompt-box{background:var(--panel);border:1px solid var(--border);border-radius:7px;padding:12px 13px;font-family:var(--mono);font-size:11.5px;line-height:1.7;color:var(--text);white-space:pre-wrap;word-break:break-word;margin-bottom:11px}
+  .prompt-box mark{background:rgba(255,199,0,.16);color:var(--yellow);border-radius:3px;padding:0 2px}
+  [data-theme="light"] .prompt-box mark{color:#7a5a00}
+  .btn-copy{display:inline-flex;align-items:center;gap:4px;background:var(--panel);border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:700;padding:6px 13px;border-radius:6px;cursor:pointer;transition:all var(--t);font-family:var(--font)}
+  .btn-copy:hover{border-color:var(--yellow);color:var(--yellow)}
+  .btn-copy.copied{border-color:#2ecc71;color:#2ecc71}
+
+  /* see more */
+  .see-more{width:100%;grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 0;background:var(--panel);border:1px dashed var(--border);border-radius:var(--r);cursor:pointer;color:var(--muted);font-size:13px;font-weight:700;font-family:var(--font);transition:all var(--t)}
+  .see-more:hover{border-color:var(--yellow);color:var(--yellow)}
+  .see-more.hidden{display:none}
+  .sm-arrow{display:inline-block;transition:transform .22s ease;font-size:11px}
+  .see-more.open .sm-arrow{transform:rotate(180deg)}
+
+  /* ─── SECTION HEADERS ────────────────────────── */
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+  .section-label{font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.05em;text-transform:uppercase}
+  .section-count{font-family:var(--mono);font-size:12px;color:var(--muted);background:var(--panel);padding:3px 10px;border-radius:20px;border:1px solid var(--border)}
+
+  /* ─── EMPTY ──────────────────────────────────── */
+  .empty{grid-column:1/-1;text-align:center;padding:48px 0;color:var(--muted);font-family:var(--mono);font-size:13px;display:none}
+  .empty-icon{font-size:28px;margin-bottom:10px}
+
+  /* ─── FOOTER ─────────────────────────────────── */
+  footer{border-top:1px solid var(--border);padding:18px 36px;text-align:center;font-size:12px;color:var(--muted);font-family:var(--mono);background:var(--surf)}
+
+  /* ─── RESPONSIVE ─────────────────────────────── */
+  @media(max-width:700px){
+    header{padding:0 20px}
+    .gamma-wrap,.toggle-bar-wrap,.search-wrap-outer,.content-area{padding:0 16px}
+    .gamma-wrap{margin-top:18px}
+    .agents-grid,.prompts-grid{grid-template-columns:1fr}
+    .tab-btn{padding:8px 14px;font-size:13px}
+  }
+
+  @keyframes up{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+  .revealed{animation:up .28s ease both}
+</style>
+</head>
+<body>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker-track">⚠️ ENTERPRISE SECURITY RULE: Never paste confidential client software builds, proprietary raw test data, source code, or unreleased product specifications into external public AI engines. Always verify technical results independently. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ⚠️ ENTERPRISE SECURITY RULE: Never paste confidential client software builds, proprietary raw test data, source code, or unreleased product specifications into external public AI engines. Always verify technical results independently. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ⚠️ ENTERPRISE SECURITY RULE: Never paste confidential client software builds, proprietary raw test data, source code, or unreleased product specifications into external public AI engines. Always verify technical results independently.</div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="36" height="36" rx="8" fill="#0a6cff" opacity=".12"/>
+      <line x1="6" y1="6"  x2="30" y2="6"  stroke="#0a6cff" stroke-width=".6" opacity=".3"/>
+      <line x1="6" y1="12" x2="30" y2="12" stroke="#0a6cff" stroke-width=".6" opacity=".3"/>
+      <line x1="6" y1="18" x2="30" y2="18" stroke="#0a6cff" stroke-width=".6" opacity=".3"/>
+      <line x1="6" y1="24" x2="30" y2="24" stroke="#0a6cff" stroke-width=".6" opacity=".3"/>
+      <line x1="6"  y1="6" x2="6"  y2="30" stroke="#0a6cff" stroke-width=".6" opacity=".3"/>
+      <line x1="12" y1="6" x2="12" y2="30" stroke="#0a6cff" stroke-width=".6" opacity=".3"/>
+      <line x1="18" y1="6" x2="18" y2="30" stroke="#0a6cff" stroke-width=".6" opacity=".3"/>
+      <line x1="24" y1="6" x2="24" y2="30" stroke="#0a6cff" stroke-width=".6" opacity=".3"/>
+      <path d="M18 7.5 L24 24 H21.6 L20.2 20H15.8 L14.4 24H12 Z M16.6 18H19.4 L18 13.5Z" fill="#0a6cff"/>
+      <circle cx="26" cy="26" r="3" fill="#FFC700"/>
+      <circle cx="26" cy="26" r="1.3" fill="#0d0f12"/>
+    </svg>
+    <div class="logo-text">
+      <span class="eyebrow"></span>
+      <span class="wordmark">The AI <em>Blueprint</em></span>
+    </div>
+  </div>
+  <button class="theme-btn" onclick="toggleTheme()">
+    <div class="ttrack"><div class="tthumb"></div></div>
+    <span id="theme-label">Light</span>
+  </button>
+</header>
+
+<!-- GAMMA BANNER -->
+<div class="gamma-wrap">
+  <div class="gamma-card">
+    <div class="gamma-head">
+      <span class="gamma-pill">🎞 Featured Prompt</span>
+      <span class="gamma-sub">Gamma App · Branded Presentations</span>
+    </div>
+    <div class="gamma-title">Generate a Branded Presentation in Gamma</div>
+    <div class="gamma-desc">Use this prompt in Gamma to build a professional slide deck with custom branding, colors, fonts, and visual consistency.</div>
+    <div class="gamma-box">Create a professional presentation with the following details:
+
+Topic: <mark>[Your presentation topic / project name]</mark>
+Audience: <mark>[e.g. Intertek senior leadership / team / client]</mark>
+Goal: <mark>[What should the audience walk away knowing or deciding?]</mark>
+
+Slide content (paste your notes or outline):
+<mark>[Your briefing notes, bullet points, or structure here]</mark>
+
+Design instructions — match Intertek's official brand:
+- Background: Deep charcoal (#130C0E) for title and divider slides
+- Accent: Yellow (#FFC700) for headings, highlights, call-to-action elements
+- Secondary: Teal (#21B6D7) for data callouts and supporting visuals
+- Light teal (#90DAEB) for subtle highlights and icon backgrounds
+- Body text: White (#FFFFFF) on dark; Dark charcoal (#130C0E) on light slides
+- Fonts: Calibri Bold 35pt for slide titles; Calibri Regular 20pt for body
+- Logo: Intertek logo placed bottom-right corner on every slide (approx. 80×30px)
+- Style: Clean corporate minimal — no decorative bars, no underlines on titles
+- Layouts: Vary between full-bleed title, two-column content, icon-grid, data callout
+- Every slide must include at least one visual element (icon, chart, image, or diagram)
+
+Tone: <mark>[Professional / Formal / Conversational]</mark>
+Slides: <mark>[e.g. 8–10 slides]</mark>
+End with a "Next Steps" slide with 2–3 concrete actions.</div>
+    <div class="gamma-actions">
+      <a href="https://gamma.app" target="_blank" rel="noopener"><button class="btn-g-open">↗ Open Gamma</button></a>
+      <button class="btn-g-copy" onclick="copyGamma(this)">📋 Copy Prompt</button>
+    </div>
+    <div class="gamma-note">Tip: In Gamma, click "Generate with AI" → "Paste text" and drop this prompt in. Customize logos and branding elements as needed via Insert → Image.</div>
+  </div>
+</div>
+
+<!-- TOGGLE BAR -->
+<div class="toggle-bar-wrap">
+  <div class="toggle-bar" role="tablist">
+    <button class="tab-btn active" id="tab-agents" role="tab" onclick="switchTab('agents')">
+      <span class="tab-icon">🤖</span>
+      AI Agents
+      <span class="tab-count" id="agents-count-tab">10</span>
+    </button>
+    <button class="tab-btn" id="tab-prompts" role="tab" onclick="switchTab('prompts')">
+      <span class="tab-icon">⚡</span>
+      Prompt Library
+      <span class="tab-count" id="prompts-count-tab">10</span>
+    </button>
+  </div>
+</div>
+
+<!-- SEARCH -->
+<div class="search-wrap-outer">
+  <div class="search-inner">
+    <svg class="s-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="search" placeholder="Search by name, department, or use-case…" autocomplete="off" spellcheck="false"/>
+  </div>
+  <div class="chips">
+    <button class="chip" onclick="setSearch('qa')">QA</button>
+    <button class="chip" onclick="setSearch('hr')">HR</button>
+    <button class="chip" onclick="setSearch('ops')">Ops</button>
+    <button class="chip" onclick="setSearch('email')">Email</button>
+    <button class="chip" onclick="setSearch('report')">Report</button>
+    <button class="chip" onclick="setSearch('meeting')">Meeting</button>
+    <button class="chip" onclick="setSearch('finance')">Finance</button>
+    <button class="chip" onclick="setSearch('legal')">Legal</button>
+    <button class="chip" onclick="setSearch('engineering')">Engineering</button>
+    <button class="chip" onclick="setSearch('research')">Research</button>
+    <button class="chip" onclick="setSearch('presentation')">Presentation</button>
+    <button class="chip" onclick="setSearch('')">✕ Clear</button>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content-area">
+
+  <!-- ══ AGENTS VIEW ══════════════════════════ -->
+  <div id="view-agents">
+    <div class="section-header">
+      <span class="section-label">Recommended AI Agents</span>
+      <span class="section-count" id="agents-count-body">10 tools</span>
+    </div>
+    <div class="agents-grid">
+
+      <div class="agent-card" data-tags="research intelligence benchmarking documentation live perplexity deep research">
+        <div class="a-emoji">🔭</div>
+        <div class="a-info">
+          <div class="a-name">Perplexity AI <span class="tag">Research</span></div>
+          <div class="a-desc">Technical intelligence, competitor benchmarking, and sourcing live documentation with cited references. Best for deep research and fact-finding.</div>
+          <div class="a-btns">
+            <a href="https://www.perplexity.ai" target="_blank" rel="noopener"><button class="btn-open">↗ Open</button></a>
+            <a href="https://www.youtube.com/watch?v=HdNXqggABUs" target="_blank" rel="noopener"><button class="btn-yt">▶ Intro</button></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="agent-card" data-tags="analysis docs compliance reports formatting long documents anthropic claude writing research">
+        <div class="a-emoji">📋</div>
+        <div class="a-info">
+          <div class="a-name">Claude by Anthropic <span class="tag">Analysis & Docs</span></div>
+          <div class="a-desc">Long compliance documents, technical report drafting, nuanced analysis, structured writing, and research synthesis.</div>
+          <div class="a-btns">
+            <a href="https://claude.ai" target="_blank" rel="noopener"><button class="btn-open">↗ Open</button></a>
+            <a href="https://www.youtube.com/watch?v=0vZ_UVLhSQQ" target="_blank" rel="noopener"><button class="btn-yt">▶ Intro</button></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="agent-card" data-tags="presentations slides analytics stakeholder gamma pitch deck presentation">
+        <div class="a-emoji">🎞</div>
+        <div class="a-info">
+          <div class="a-name">Gamma App <span class="tag">Presentations</span></div>
+          <div class="a-desc">Convert raw notes and text into polished stakeholder slide decks in minutes. Use the featured Intertek-branded prompt above.</div>
+          <div class="a-btns">
+            <a href="https://gamma.app" target="_blank" rel="noopener"><button class="btn-open">↗ Open</button></a>
+            <a href="https://www.youtube.com/watch?v=vtMIUtE9doQ" target="_blank" rel="noopener"><button class="btn-yt">▶ Intro</button></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="agent-card" data-tags="video training simulation heygen runway generation walkthrough">
+        <div class="a-emoji">🎬</div>
+        <div class="a-info">
+          <div class="a-name">HeyGen / Runway <span class="tag">Video</span></div>
+          <div class="a-desc">AI-generated training videos, avatar walkthroughs, and user-journey simulations for internal use.</div>
+          <div class="a-btns">
+            <a href="https://www.heygen.com" target="_blank" rel="noopener"><button class="btn-open">↗ Open</button></a>
+            <a href="https://www.youtube.com/watch?v=RTmlxuroR50" target="_blank" rel="noopener"><button class="btn-yt">▶ Intro</button></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="agent-card" data-tags="general chatgpt openai writing drafting data spreadsheet formula research">
+        <div class="a-emoji">📊</div>
+        <div class="a-info">
+          <div class="a-name">ChatGPT (GPT-4o) <span class="tag">General</span></div>
+          <div class="a-desc">Versatile assistant for drafting, data interpretation, spreadsheet formulas, and rapid Q&amp;A across all teams.</div>
+          <div class="a-btns">
+            <a href="https://chat.openai.com" target="_blank" rel="noopener"><button class="btn-open">↗ Open</button></a>
+            <a href="https://www.youtube.com/watch?v=PYdqCGCdce8" target="_blank" rel="noopener"><button class="btn-yt">▶ Intro</button></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="agent-card" data-tags="code engineering developer python javascript debugging review copilot github">
+        <div class="a-emoji">💻</div>
+        <div class="a-info">
+          <div class="a-name">GitHub Copilot <span class="tag">Engineering</span></div>
+          <div class="a-desc">AI pair-programmer for code completion, refactoring, test generation, and inline documentation in your IDE.</div>
+          <div class="a-btns">
+            <a href="https://github.com/features/copilot" target="_blank" rel="noopener"><button class="btn-open">↗ Open</button></a>
+            <a href="https://www.youtube.com/watch?v=wAYd3u-X5Ks" target="_blank" rel="noopener"><button class="btn-yt">▶ Intro</button></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="agent-card" data-tags="transcription meeting notes summary otter audio voice recording minutes">
+        <div class="a-emoji">🎙</div>
+        <div class="a-info">
+          <div class="a-name">Otter.ai <span class="tag">Meetings</span></div>
+          <div class="a-desc">Real-time meeting transcription, auto-generated summaries, and action item extraction from calls and conferences.</div>
+          <div class="a-btns">
+            <a href="https://otter.ai" target="_blank" rel="noopener"><button class="btn-open">↗ Open</button></a>
+            <a href="https://www.youtube.com/watch?v=CIxG8J2GM74" target="_blank" rel="noopener"><button class="btn-yt">▶ Intro</button></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="agent-card" data-tags="image design graphics visual canva creative branding marketing content presentation">
+        <div class="a-emoji">🎨</div>
+        <div class="a-info">
+          <div class="a-name">Canva AI <span class="tag">Design</span></div>
+          <div class="a-desc">AI-assisted graphic design for reports, newsletters, and branded presentations — no design experience needed.</div>
+          <div class="a-btns">
+            <a href="https://www.canva.com" target="_blank" rel="noopener"><button class="btn-open">↗ Open</button></a>
+            <a href="https://www.youtube.com/watch?v=BQo5hF9w7-A" target="_blank" rel="noopener"><button class="btn-yt">▶ Intro</button></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="agent-card" data-tags="automation workflow no-code zapier integrate tools process ops operations">
+        <div class="a-emoji">⚙️</div>
+        <div class="a-info">
+          <div class="a-name">Zapier AI <span class="tag">Automation</span></div>
+          <div class="a-desc">Build AI-powered automations between apps without code — connect email, sheets, CRM, and internal tools.</div>
+          <div class="a-btns">
+            <a href="https://zapier.com/ai" target="_blank" rel="noopener"><button class="btn-open">↗ Open</button></a>
+            <a href="https://www.youtube.com/watch?v=-DtyCYwtpwY" target="_blank" rel="noopener"><button class="btn-yt">▶ Intro</button></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="agent-card" data-tags="legal contract review clause risk compliance document law harvey">
+        <div class="a-emoji">⚖️</div>
+        <div class="a-info">
+          <div class="a-name">Harvey AI <span class="tag">Legal</span></div>
+          <div class="a-desc">Contract analysis, clause review, risk flagging, and legal document drafting for compliance teams.</div>
+          <div class="a-btns">
+            <a href="https://www.harvey.ai" target="_blank" rel="noopener"><button class="btn-open">↗ Open</button></a>
+            <a href="https://www.youtube.com/watch?v=92_ipeEdpU0" target="_blank" rel="noopener"><button class="btn-yt">▶ Intro</button></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty" id="agents-empty"><div class="empty-icon">🔍</div>No agents match your search.</div>
+    </div>
+  </div>
+
+  <!-- ══ PROMPTS VIEW ══════════════════════════ -->
+  <div id="view-prompts">
+    <div class="section-header">
+      <span class="section-label">Prompt Library</span>
+      <span class="section-count" id="prompts-count-body">10 prompts</span>
+    </div>
+    <div class="prompts-grid">
+
+      <!-- VISIBLE 10 -->
+      <div class="flash-card" data-tags="research deep research perplexity claude comprehensive topic investigation intelligence">
+        <div class="f-meta"><span class="tag t">Research</span><span class="tag">Deep Dive</span></div>
+        <div class="f-title">Deep Research Brief</div>
+        <div class="f-desc">Commission a thorough AI research report on any topic — technology, market, competitor, or technical subject.</div>
+        <div class="prompt-box">You are a senior research analyst. Conduct a comprehensive deep-dive research report on:
+
+Topic: <mark>[Insert research topic]</mark>
+Purpose: <mark>[e.g. vendor evaluation, market entry, technical assessment]</mark>
+Depth: <mark>[Overview / Detailed / Expert-level]</mark>
+
+Structure your report as:
+1. Executive Summary (3–5 bullet points)
+2. Background and Context
+3. Key Findings (minimum 5 substantiated points)
+4. Data, Statistics, and Evidence (cite sources)
+5. Competing Perspectives or Counterarguments
+6. Implications for Intertek / our industry
+7. Recommended Next Steps
+8. Knowledge Gaps (what still needs investigation)
+
+Be thorough. Prioritise accuracy over brevity.</div>
+        <button class="btn-copy" onclick="copyPrompt(this)">📋 Copy Prompt</button>
+      </div>
+
+      <div class="flash-card" data-tags="meeting minutes summary action items notes recap operations ops">
+        <div class="f-meta"><span class="tag g">Ops</span><span class="tag">Meeting</span></div>
+        <div class="f-title">Meeting Minutes Formatter</div>
+        <div class="f-desc">Convert raw meeting notes into clean, structured minutes with owners and deadlines.</div>
+        <div class="prompt-box">Convert the following raw meeting notes into structured minutes:
+
+Meeting title: <mark>[Meeting Name]</mark>
+Date & time: <mark>[Date and Time]</mark>
+Attendees: <mark>[List names and roles]</mark>
+Chair: <mark>[Name]</mark>
+Raw notes: <mark>[Paste your unstructured notes here]</mark>
+
+Output:
+1. Meeting Purpose (one sentence)
+2. Agenda Items Discussed
+3. Key Decisions Made
+4. Action Items: Owner | Task | Due Date | Priority
+5. Parking Lot (items deferred)
+6. Next Meeting: Date | Time | Location</div>
+        <button class="btn-copy" onclick="copyPrompt(this)">📋 Copy Prompt</button>
+      </div>
+
+      <div class="flash-card" data-tags="presentation slide by slide content outline deck gamma pitch structure">
+        <div class="f-meta"><span class="tag">Presentation</span><span class="tag">Content</span></div>
+        <div class="f-title">Slide-by-Slide Content Planner</div>
+        <div class="f-desc">Generate complete slide-by-slide content before feeding it into Gamma or PowerPoint.</div>
+        <div class="prompt-box">Write detailed slide-by-slide content for a presentation on:
+
+Topic: <mark>[Presentation topic]</mark>
+Audience: <mark>[e.g. leadership, clients, team]</mark>
+Total slides: <mark>[e.g. 8–10]</mark>
+Key message: <mark>[One sentence: what should they walk away thinking?]</mark>
+Raw notes: <mark>[Paste your briefing material here]</mark>
+
+For each slide:
+- Slide number and title
+- Headline (the one thing this slide says)
+- 3–4 bullet points of body content
+- Suggested visual (chart / icon / image / diagram)
+- Speaker notes (2–3 sentences to say aloud)
+
+End with a "Next Steps" slide with 2–3 concrete actions.</div>
+        <button class="btn-copy" onclick="copyPrompt(this)">📋 Copy Prompt</button>
+      </div>
+
+      <div class="flash-card" data-tags="email draft professional send correspondence formal ops comms writing">
+        <div class="f-meta"><span class="tag">Comms</span><span class="tag">Email</span></div>
+        <div class="f-title">Professional Email Drafter</div>
+        <div class="f-desc">Draft any professional email — internal or external — from a quick brief of what you need to say.</div>
+        <div class="prompt-box">Draft a professional email based on the following brief:
+
+To: <mark>[Recipient name / role / team]</mark>
+From: <mark>[Your name / role]</mark>
+Relationship: <mark>[e.g. client, colleague, senior manager, vendor]</mark>
+Purpose: <mark>[What is this email about?]</mark>
+Key points: <mark>[List 2–4 things to communicate]</mark>
+Tone: <mark>[Formal / Friendly-professional / Urgent / Diplomatic]</mark>
+Desired outcome: <mark>[What action or response do you want?]</mark>
+
+Subject line first, then email body.
+End with a clear call to action.</div>
+        <button class="btn-copy" onclick="copyPrompt(this)">📋 Copy Prompt</button>
+      </div>
+
+      <div class="flash-card" data-tags="qa testing technical matrix comprehensive test cases regression">
+        <div class="f-meta"><span class="tag y">QA</span><span class="tag">Testing</span></div>
+        <div class="f-title">Comprehensive Test Matrix</div>
+        <div class="f-desc">Generate a structured test matrix covering functional, edge, and regression cases for any feature.</div>
+        <div class="prompt-box">Generate a comprehensive test matrix for <mark>[Insert Feature / Module Name]</mark>.
+Include:
+- Functional test cases
+- Edge cases and boundary conditions
+- Regression scenarios for <mark>[Insert Related Modules]</mark>
+- Priority levels (P0–P3) per case
+- Expected vs actual results columns
+Format as a table suitable for our QA tracker.</div>
+        <button class="btn-copy" onclick="copyPrompt(this)">📋 Copy Prompt</button>
+      </div>
+
+      <div class="flash-card" data-tags="qa engineering documentation bug report refiner defect">
+        <div class="f-meta"><span class="tag y">QA</span><span class="tag">Bug Report</span></div>
+        <div class="f-title">Technical Bug Report Refiner</div>
+        <div class="f-desc">Turn rough bug notes into a clean, developer-ready defect report with full reproducibility steps.</div>
+        <div class="prompt-box">Refine the following raw bug note into a structured defect report:
+
+Raw note: <mark>[Paste your rough bug description here]</mark>
+
+Output sections:
+- Summary (one sentence)
+- Environment: <mark>[OS / Browser / Build Version]</mark>
+- Steps to Reproduce (numbered)
+- Expected Behaviour
+- Actual Behaviour
+- Severity: <mark>[Critical / Major / Minor / Cosmetic]</mark>
+- Suggested Root Cause (if known)</div>
+        <button class="btn-copy" onclick="copyPrompt(this)">📋 Copy Prompt</button>
+      </div>
+
+      <div class="flash-card" data-tags="hr training onboarding role-specific draft 30 60 90 day plan">
+        <div class="f-meta"><span class="tag p">HR</span><span class="tag">Onboarding</span></div>
+        <div class="f-title">Role-Specific Onboarding Plan</div>
+        <div class="f-desc">Generate a 30-60-90 day onboarding plan tailored to a specific role and team.</div>
+        <div class="prompt-box">Create a 30-60-90 day onboarding plan for a new <mark>[Job Title]</mark> joining <mark>[Department Name]</mark>.
+
+Include:
+- Week 1: Orientation tasks, tool access, key contacts
+- Month 1: Core responsibilities to shadow / begin
+- Month 2: Independent deliverables and milestones
+- Month 3: Performance check-in goals
+
+Context: The role focuses on <mark>[Insert Role Focus Area]</mark>.</div>
+        <button class="btn-copy" onclick="copyPrompt(this)">📋 Copy Prompt</button>
+      </div>
+
+      <div class="flash-card" data-tags="hr team management feedback growth oriented review performance appraisal">
+        <div class="f-meta"><span class="tag p">HR</span><span class="tag">Feedback</span></div>
+        <div class="f-title">Growth-Oriented Feedback</div>
+        <div class="f-desc">Draft constructive, growth-focused performance feedback that motivates rather than discourages.</div>
+        <div class="prompt-box">Write a growth-oriented performance review comment for:
+- Employee role: <mark>[Job Title]</mark>
+- Observation: <mark>[Describe a specific behaviour or outcome observed]</mark>
+- Area to improve: <mark>[Skill or behaviour to develop]</mark>
+
+Tone: Balanced, specific, encouraging.
+Format: 3–4 sentences. Strength → growth area with concrete suggestion → forward-looking close.</div>
+        <button class="btn-copy" onclick="copyPrompt(this)">📋 Copy Prompt</button>
+      </div>
+
+      <div class="flash-card" data-tags="report executive summary analysis data findings business intelligence reporting leadership">
+        <div class="f-meta"><span class="tag t">Reporting</span><span class="tag">Summary</span></div>
+        <div class="f-title">Executive Summary Builder</div>
+        <div class="f-desc">Convert a long report or data set into a tight, boardroom-ready executive summary.</div>
+        <div class="prompt-box">Write an executive summary based on the following report content:
+
+Source material: <mark>[Paste key findings, data points, or paragraphs here]</mark>
+Audience: <mark>[e.g. Senior Leadership / Board / Client]</mark>
+Report title: <mark>[Report Name]</mark>
+
+Output (max 300 words):
+- Context (1–2 sentences)
+- Key findings (3–4 bullet points)
+- Risks or concerns
+- Recommended actions
+- Next review date</div>
+        <button class="btn-copy" onclick="copyPrompt(this)">📋 Copy Prompt</button>
+      </div>
+
+      <div class="flash-card" data-tags="ops email communication operations client delay diplomat professional">
+        <div class="f-meta"><span class="tag g">Ops</span><span class="tag">Email</span></div>
+        <div class="f-title">Client Delay Diplomat</div>
+        <div class="f-desc">Draft a professional, empathetic email about a project delay without damaging client trust.</div>
+        <div class="prompt-box">Write a professional client-facing email for:
+- Client / Project: <mark>[Client Name / Project Code]</mark>
+- Original deadline: <mark>[Original Date]</mark>
+- New revised deadline: <mark>[New Date]</mark>
+- Reason for delay: <mark>[Brief reason — technical / resource / scope]</mark>
+
+Tone: Accountable, solution-focused, and reassuring.
+Include: apology, brief context, revised timeline, next check-in date.</div>
+        <button class="btn-copy" onclick="copyPrompt(this)">📋 Copy Prompt</button>
+      </div>
+
+      <!-- SEE MORE BUTTON -->
+      <button class="see-more" id="see-more-btn" onclick="toggleExtra()">
+        <span id="see-more-label">See 12 more prompts</span><span class="sm-arrow">▼</span>
+      </button>
+
+      <!-- EXTRA 12 -->
+      <div class="flash-card extra" data-tags="qa test plan strategy release sprint engineering">
+        <div class="f-meta"><span class="tag y">QA</span><span class="tag">Release</span></div>
+        <div class="f-title">Release Test Plan Generator</div>
+        <div class="f-desc">Create a full test plan document ahead of a product release or sprint sign-off.</div>
+        <div class="prompt-box">Write a release test plan for <mark>[Product / Module Name]</mark> v<mark>[Version]</mark>.
+
+Sections:
+1. Scope — what is and isn't tested
+2. Test environments: <mark>[e.g. staging, UAT]</mark>
+3. Entry and exit criteria
+4. Test types: smoke, functional, regression, performance
+5. Risk areas and mitigations
+6. Sign-off approvers: <mark>[Names / Roles]</mark></div>
+        <button class="btn-copy" onclick="copyPrompt(this)">📋 Copy Prompt</button>
+      </div>
+
+      <div class="flash-card extra" data-tags="qa root cause analysis failure investigation rca post-mortem incident">
+        <div class="f-meta"><span class="tag y">QA</span><span class="tag">RCA</span></div>
+        <div class="f-title">Root Cause Analysis Draft</div>
+        <div class="f-desc">Structure a post-incident RCA report from rough findings and timeline notes.</div>
+        <div class="prompt-box">Draft a root cause analysis for:
+
+Incident: <mark>[Brief description of what went wrong]</mark>
+Date & time: <mark>[When it occurred]</mark>
+Systems affected: <mark>[List systems / components]</mark>
+Timeline: <mark>[Paste key timestamps and actions]</mark>
+
+Include:
+- Root cause (primary and contributing)
+- Impact assessment
+- Immediate remediation taken
+- Long-term corrective actions
+- Lessons learned</div>
+        <button class="btn-copy" onclick="copyPrompt(this)">📋 Copy Prompt</button>
+      </div>
+
+      <div class="flash-card extra" data-tags="ops sop standard operating procedure process documentation operations">
+        <div class="f-meta"><span class="tag g">Ops</span><span class="tag">SOP</span></div>
+        <div class="f-title">SOP Writer</div>
+        <div class="f-desc">Draft a clear Standard Operating Procedure for any repeatable internal process.</div>
+        <div class="prompt-box">Write a Standard Operating Procedure (SOP) for:
+
+Process name: <mark>[Process Title]</mark>
+Department: <mark>[Department Name]</mark>
+Frequency: <mark>[Daily / Weekly / As-needed]</mark>
+Overview: <mark>[What does this process achieve?]</mark>
+
+Include:
+- Purpose and scope
+- Roles and responsibilities
+- Step-by-step instructions (numbered)
+- Tools / systems required
+- Quality checks and approval points</div>
+        <button class="btn-copy" onclick="copyPrompt(this)">📋 Copy Prompt</button>
+      </div>
+
+      <div class="flash-card extra" data-tags="ops escalation complaint client response operations service recovery email">
+        <div class="f-meta"><span class="tag g">Ops</span><span class="tag">Escalation</span></div>
+        <div class="f-title">Escalation Response Email</div>
+        <div class="f-desc">Write a calm, professional response to a client complaint or service escalation.</div>
+        <div class="prompt-box">Write a professional escalation response email.
+
+Client: <mark>[Client / Company Name]</mark>
+Issue raised: <mark>[Brief description of their complaint]</mark>
+Our position: <mark>[What we know, what we've done so far]</mark>
+Resolution: <mark>[What we are offering / next steps]</mark>
+
+Tone: Empathetic, clear, and solution-oriented.
+Avoid: defensive language, blame-shifting, vague promises.</div>
+        <button class="btn-copy" onclick="copyPrompt(this)">📋 Copy Prompt</button>
+      </div>
+
+      <div class="flash-card extra" data-tags="hr job description jd hiring recruitment role posting vacancy">
+        <div class="f-meta"><span class="tag p">HR</span><span class="tag">Recruitment</span></div>
+        <div class="f-title">Job Description Writer</div>
+        <div class="f-desc">Generate a complete, compelling job description ready for internal or external posting.</div>
+        <div class="prompt-box">Write a full job description for:
+
+Title: <mark>[Role Title]</mark>
+Department: <mark>[Department]</mark>
+Location: <mark>[City / Remote / Hybrid]</mark>
+Key responsibilities: <mark>[List 4–6 main duties]</mark>
+Required qualifications: <mark>[Degree, experience, certifications]</mark>
+Preferred skills: <mark>[Nice-to-haves]</mark>
+
+Tone: Professional yet approachable. Include an Intertek values paragraph at the end.</div>
+        <button class="btn-copy" onclick="copyPrompt(this)">📋 Copy Prompt</button>
+      </div>
+
+      <div class="flash-card extra" data-tags="hr interview questions candidate shortlist screening hiring behavioural">
+        <div class="f-meta"><span class="tag p">HR</span><span class="tag">Interview</span></div>
+        <div class="f-title">Interview Question Generator</div>
+        <div class="f-desc">Create a structured interview question set with behavioural and technical questions for any role.</div>
+        <div class="prompt-box">Generate an interview question set for a <mark>[Job Title]</mark> candidate.
+
+3 sections:
+1. Behavioural (STAR method) — 5 questions about <mark>[key competencies]</mark>
+2. Technical — 4 questions testing <mark>[domain knowledge area]</mark>
+3. Culture & values fit — 3 questions aligned with Intertek values
+
+Also provide: scoring rubric (1–5 scale) for each section.</div>
+        <button class="btn-copy" onclick="copyPrompt(this)">📋 Copy Prompt</button>
+      </div>
+
+      <div class="flash-card extra" data-tags="engineering technical specification spec document feature design dev">
+        <div class="f-meta"><span class="tag r">Engineering</span><span class="tag">Spec</span></div>
+        <div class="f-title">Technical Specification Writer</div>
+        <div class="f-desc">Draft a structured technical spec document for a new feature or system component.</div>
+        <div class="prompt-box">Write a technical specification for:
+
+Feature / System: <mark>[Feature or Component Name]</mark>
+Business objective: <mark>[What problem does this solve?]</mark>
+Stakeholders: <mark>[List teams involved]</mark>
+
+Include:
+- Overview and goals
+- Functional requirements (numbered)
+- Non-functional requirements (performance, security, scalability)
+- System design / architecture notes
+- API endpoints or data model (if applicable)
+- Open questions / assumptions</div>
+        <button class="btn-copy" onclick="copyPrompt(this)">📋 Copy Prompt</button>
+      </div>
+
+      <div class="flash-card extra" data-tags="engineering changelog release notes version update software deployment">
+        <div class="f-meta"><span class="tag r">Engineering</span><span class="tag">Release Notes</span></div>
+        <div class="f-title">Release Notes Generator</div>
+        <div class="f-desc">Turn a list of commits or feature notes into clean, user-friendly release notes.</div>
+        <div class="prompt-box">Convert the following into polished release notes for v<mark>[X.X.X]</mark>:
+
+Raw changes: <mark>[Paste commit messages or feature list here]</mark>
+Audience: <mark>[Internal Dev Team / End Users / Clients]</mark>
+
+Format:
+## v[X.X.X] — [Release Date]
+### New Features
+### Improvements
+### Bug Fixes
+### Known Issues</div>
+        <button class="btn-copy" onclick="copyPrompt(this)">📋 Copy Prompt</button>
+      </div>
+
+      <div class="flash-card extra" data-tags="report data analysis insight chart interpret findings analytics KPI metrics">
+        <div class="f-meta"><span class="tag t">Reporting</span><span class="tag">Data</span></div>
+        <div class="f-title">Data Insight Interpreter</div>
+        <div class="f-desc">Turn raw numbers or chart data into plain-language insights and recommendations.</div>
+        <div class="prompt-box">Interpret the following data and extract business insights:
+
+Data / figures: <mark>[Paste table, numbers, or chart values here]</mark>
+Metric: <mark>[e.g. defect rate, client satisfaction, throughput]</mark>
+Time period: <mark>[e.g. Q1 2026 vs Q4 2025]</mark>
+
+Provide:
+1. What the data shows (plain language)
+2. Notable trends or anomalies
+3. Possible causes
+4. Recommended actions
+5. One-sentence headline for a leadership slide</div>
+        <button class="btn-copy" onclick="copyPrompt(this)">📋 Copy Prompt</button>
+      </div>
+
+      <div class="flash-card extra" data-tags="writing proposal business case stakeholder justification budget approval project comms">
+        <div class="f-meta"><span class="tag">Comms</span><span class="tag">Business Case</span></div>
+        <div class="f-title">Business Case Drafter</div>
+        <div class="f-desc">Structure a persuasive business case to justify a project, tool, or budget request to leadership.</div>
+        <div class="prompt-box">Write a business case for:
+
+Initiative: <mark>[Project or Tool Name]</mark>
+Requesting team: <mark>[Your Department]</mark>
+Problem: <mark>[What pain point or gap exists?]</mark>
+Proposed solution: <mark>[Brief description]</mark>
+Estimated cost: <mark>[Budget / Resources needed]</mark>
+Expected benefit: <mark>[ROI, time savings, risk reduction]</mark>
+
+Structure:
+- Problem Statement
+- Proposed Solution
+- Cost-Benefit Summary
+- Risks of inaction
+- Recommended next step</div>
+        <button class="btn-copy" onclick="copyPrompt(this)">📋 Copy Prompt</button>
+      </div>
+
+      <div class="flash-card extra" data-tags="legal compliance contract clause review risk flag summary legal ops">
+        <div class="f-meta"><span class="tag">Legal</span><span class="tag">Compliance</span></div>
+        <div class="f-title">Contract Clause Summariser</div>
+        <div class="f-desc">Summarise complex contract language into plain English with risk flags highlighted.</div>
+        <div class="prompt-box">Summarise the following contract clause(s) in plain English:
+
+Clause text: <mark>[Paste the contract language here]</mark>
+Contract type: <mark>[e.g. NDA, Service Agreement, MSA]</mark>
+
+Provide:
+- Plain English summary (2–3 sentences)
+- Key obligations for Intertek
+- Key obligations for the other party
+- Risk flags or unusual terms
+- Questions to raise with legal counsel
+
+Note: Always have final contracts reviewed by a qualified legal professional.</div>
+        <button class="btn-copy" onclick="copyPrompt(this)">📋 Copy Prompt</button>
+      </div>
+
+      <div class="flash-card extra" data-tags="training learning development course outline elearning module content hr l&d">
+        <div class="f-meta"><span class="tag p">HR</span><span class="tag">L&amp;D</span></div>
+        <div class="f-title">Training Module Outline</div>
+        <div class="f-desc">Design a structured training module with learning objectives and assessment ideas.</div>
+        <div class="prompt-box">Create a training module outline for:
+
+Topic: <mark>[Training Subject / Skill]</mark>
+Audience: <mark>[Target employees — e.g. new joiners, team leads]</mark>
+Duration: <mark>[e.g. 30 mins / 2 hours / 1 day]</mark>
+Format: <mark>[e-learning / live workshop / video / PDF guide]</mark>
+
+Include:
+- Learning objectives (3–5 outcomes)
+- Module sections with time allocations
+- Key content points per section
+- Activities or exercises
+- Assessment / knowledge check method</div>
+        <button class="btn-copy" onclick="copyPrompt(this)">📋 Copy Prompt</button>
+      </div>
+
+      <div class="empty" id="prompts-empty"><div class="empty-icon">🔍</div>No prompts match your search.</div>
+    </div>
+  </div>
+
+</div><!-- end content-area -->
+
+<footer>© 2026. All rights reserved. &nbsp;|&nbsp; The AI Blueprint v1.0</footer>
+
+<script>
+  /* ── THEME ── */
+  function toggleTheme(){
+    const h=document.documentElement,d=h.getAttribute('data-theme')==='dark';
+    h.setAttribute('data-theme',d?'light':'dark');
+    document.getElementById('theme-label').textContent=d?'Dark':'Light';
+  }
+
+  /* ── TAB SWITCH ── */
+  let activeTab='agents';
+  function switchTab(tab){
+    activeTab=tab;
+    document.getElementById('view-agents').style.display=tab==='agents'?'block':'none';
+    document.getElementById('view-prompts').style.display=tab==='prompts'?'block':'none';
+    document.getElementById('tab-agents').classList.toggle('active',tab==='agents');
+    document.getElementById('tab-prompts').classList.toggle('active',tab==='prompts');
+    // rerun search so counts update for the new view
+    runSearch(document.getElementById('search').value);
+  }
+
+  /* ── SEE MORE ── */
+  let extraOpen=false;
+  function toggleExtra(){
+    extraOpen=!extraOpen;
+    document.querySelectorAll('.flash-card.extra').forEach(c=>{
+      if(!c.classList.contains('sv')) c.classList.toggle('revealed',extraOpen);
+    });
+    const btn=document.getElementById('see-more-btn');
+    btn.classList.toggle('open',extraOpen);
+    document.getElementById('see-more-label').textContent=extraOpen?'Show fewer prompts':'See 12 more prompts';
+    updateCounts();
+  }
+
+  /* ── SEARCH ── */
+  function runSearch(raw){
+    const q=raw.toLowerCase().trim();
+    const searching=q.length>0;
+
+    // agents
+    let va=0;
+    document.querySelectorAll('.agent-card').forEach(c=>{
+      const match=!searching||(c.textContent+c.dataset.tags).toLowerCase().includes(q);
+      c.classList.toggle('hidden',!match);
+      if(match)va++;
+    });
+    document.getElementById('agents-empty').style.display=va===0?'flex':'none';
+
+    // prompts
+    let vp=0;
+    document.querySelectorAll('.flash-card').forEach(c=>{
+      const isExtra=c.classList.contains('extra');
+      if(searching){
+        const match=(c.textContent+c.dataset.tags).toLowerCase().includes(q);
+        c.classList.remove('sv');
+        if(match){c.classList.add('sv');c.classList.remove('hidden');vp++;}
+        else{c.classList.remove('sv');c.classList.add('hidden');}
+      } else {
+        c.classList.remove('sv','hidden');
+        if(isExtra&&!extraOpen) c.classList.remove('revealed');
+        vp++;
+      }
+    });
+
+    // see more btn
+    const smBtn=document.getElementById('see-more-btn');
+    smBtn.classList.toggle('hidden',searching);
+    document.getElementById('prompts-empty').style.display=(searching&&vp===0)?'flex':'none';
+
+    updateCounts(va,searching?vp:null);
+  }
+
+  function updateCounts(agentCount,promptCount){
+    // count visible agents
+    let va=agentCount??0;
+    if(agentCount===undefined){
+      va=0;
+      document.querySelectorAll('.agent-card:not(.hidden)').forEach(()=>va++);
+    }
+    // count visible prompts
+    let vp=promptCount??0;
+    if(promptCount===null||promptCount===undefined){
+      vp=0;
+      document.querySelectorAll('.flash-card').forEach(c=>{
+        if(window.getComputedStyle(c).display!=='none') vp++;
+      });
+    }
+    document.getElementById('agents-count-tab').textContent=va;
+    document.getElementById('agents-count-body').textContent=va+' tool'+(va===1?'':'s');
+    document.getElementById('prompts-count-tab').textContent=vp;
+    document.getElementById('prompts-count-body').textContent=vp+' prompt'+(vp===1?'':'s');
+  }
+
+  document.getElementById('search').addEventListener('keyup',function(){runSearch(this.value)});
+
+  function setSearch(v){
+    const inp=document.getElementById('search');
+    inp.value=v;
+    // highlight active chip
+    document.querySelectorAll('.chip').forEach(c=>{
+      c.classList.toggle('active-chip',c.textContent.toLowerCase()===v.toLowerCase());
+    });
+    runSearch(v);
+  }
+
+  /* ── COPY ── */
+  function copyPrompt(btn){
+    navigator.clipboard.writeText(btn.previousElementSibling.innerText).then(()=>{
+      btn.classList.add('copied');btn.textContent='✓ Copied!';
+      setTimeout(()=>{btn.classList.remove('copied');btn.textContent='📋 Copy Prompt';},2200);
+    });
+  }
+  function copyGamma(btn){
+    navigator.clipboard.writeText(document.querySelector('.gamma-box').innerText).then(()=>{
+      btn.classList.add('copied');btn.textContent='✓ Copied!';
+      setTimeout(()=>{btn.classList.remove('copied');btn.textContent='📋 Copy Prompt';},2200);
+    });
+  }
+
+  // init
+  updateCounts();
+</script>
+</body>
+</html>
